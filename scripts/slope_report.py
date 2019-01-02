@@ -6,6 +6,7 @@ import pandas as pd
 import math
 import scipy
 from scipy import stats
+
 #-------------------------------------------------------------------------------
 
 simulation = open("../data/slow_transcript_2_counts.tsv", 'r')

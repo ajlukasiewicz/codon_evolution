@@ -1,18 +1,18 @@
 #!/usr/bin/env python
+```introduces muation in transcript```
 
 import numpy as np
 import transcripts
 
+#-------------------------------------------------------------------------------
 
 # mutate
 def mutate(transcript):
     n = np.random.randint(0,len(gene))
     m = randint(0,2)
-    transcript.insert(n,rates[m])
-
+    transcript.weights.insert(n,rates[m])
 
 # accelerated simulation functions
-
 def safe_calc(exponent):
     if exponent > 700:
         print("system maxed")
@@ -30,3 +30,5 @@ xj = stab_mut
   else:
 exponent = -2 * float(N) * (xi - xj)
     return(safe_calc(exponent))
+
+def main():

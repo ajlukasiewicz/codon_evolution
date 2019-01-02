@@ -1,81 +1,73 @@
-#!/usr/bin/env python
-
-import argparse
+#!/usr/bin/env python3
+```This script caclulates steady state protein production rate```
 import csv
 import math
 import numpy as np
 import pandas as pd
 from scipy import stats
+
 #-------------------------------------------------------------------------------
+class evalSteadyState:
+#   imports table from pinetree output and calculates protein production rate at steady state
+    def __init__(self):
+        self.time = []
+        self.ribosome_counts = []
+        self.protein_counts = []
+        self.fitness = ""
+        self.slopes = []
+        self.x = []
+        self.y = []
 
-def slope(times,slopes,ribosome_counts):
-    for i in range(len(times)):
-        if i <= len(times) - 3:
-            slopes.append(float(ribosome_counts[i+1] - ribosome_counts[i])/(times[i+1]-times[i]))
-    return slopes
+    def importTable(self,file,protein_name):
+        '''open tsv file from pinetree, split each column into lists '''
+        simulation = open(file, 'r')
+        proteins = []
+        time = []
+        feature = []
+        lines = simulation.readlines()
+        linecounter = 0
+        for line in lines:
+            if linecounter == 0:
+                print("header found")
+            else:
+                data = line.strip().split('\t')
+                proteins.append(float(data[2]))
+                time.append(float(data[0]))
+                feature.append(str(data[1]))
+            linecounter += 1
+        simulation.close()
 
-def steady_state(times,slopes,ribosome_counts,protein_counts,x,y):
-    for i in range(len(times)):
-        average_slope = np.average(slopes[i:i+6]) #average of 5 points in list
-        if math.fabs(average_slope) <= 0.01 and i <= (len(times)-10): #finds slopes that were calculated closely around 0
-            print("time: %.2f " % times[i])
-            print("free ribosomes: %.2f " % ribosome_counts[i])
-            print("amount of proteinP produced: %.2f" % protein_counts[i])
-            y = protein_counts[i:len(protein_counts)]
-            x = times[i:len(protein_counts)]
-            break
-    slope, intercept , r_value, p_value, std_err = stats.linregress(x,y)
-    print("steady state production rate calculated: %.2f" % slope + " proteins/s")
-    return slope
+        #filter table for protein feature
+        for i in range(len(feature)):
+            if feature[i] == '__ribosome':
+                self.ribosome_counts.append(proteins[i])
+                self.time.append(time[i])
+            if feature[i] == str(protein_name):
+                self.protein_counts.append(proteins[i])
+        return(self.time,self.ribosome_counts,self.protein_counts)
 
-def main():
-    parser = argparse.ArgumentParser(description='simulation counts table')
-    parser.add_argument(
-        '-i',
-        action='store',
-        dest='i',
-        required=True,
-        type=str,
-        help="input .tsv file from pinetree",
-        )
-    #open tsv file from pinetree, split each column into lists
-    options = parser.parse_args()
-    simulation = open(options.i, 'r')
-    proteins = []
-    time = []
-    feature = []
-    lines = simulation.readlines()
-    linecounter = 0
-    for line in lines:
-        if linecounter == 0:
-            continue
-        else:
-            data = line.strip().split('\t')
-            proteins.append(float(data[2]))
-            time.append(float(data[0]))
-            feature.append(str(data[1]))
-        linecounter += 1
-    simulation.close()
+    def ribo_slope(self,times,ribosome_counts):
+        for i in range(len(times)):
+            if i <= len(times) - 3:
+                self.slopes.append(float(ribosome_counts[i+1] - ribosome_counts[i])/(times[i+1]-times[i]))
+        print("slopes calculated...")
+        return self.slopes
 
-    #filter table for protein feature
-    ribosome_counts = []
-    protein_counts = []
-    times = []
-    for i in range(len(feature)):
-        if feature[i] =='__ribosome':
-            ribosome_counts.append(proteins[i])
-            times.append(time[i])
-        if feature[i] == 'proteinP':
-            protein_counts.append(proteins[i])
+    def steady_state(self,times,slopes,ribosome_counts,protein_counts):
+        '''find where the slope of ribosome counts has leveled at zero, calculate the protein production rate after that point'''
+        for i in range(len(times)):
+            average_slope = np.average(self.slopes[i:i+6]) #average of 5 points in list
+            if math.fabs(average_slope) <= 0.01 and i <= (len(times)-10): #finds slopes that were calculated closely around 0
+                print("time: %.2f " % times[i])
+                print("free ribosomes: %.2f " % self.ribosome_counts[i])
+                print("amount of proteinP produced: %.2f" % self.protein_counts[i])
+                self.y = protein_counts[i:len(protein_counts)]
+                self.x = times[i:len(protein_counts)]
+                break
+        return self.x, self.y
 
-    #calculate slope of free ribosome counts
-    slopes = []
-    slope(times,slopes,ribosome_counts)
-
-    #determine time and rate of protein production at steady state
-    x = []
-    y = []
-    steady_state(times,slopes,ribosome_counts,protein_counts,x,y)
-
-if __name__ == "__main__":
-    main()
+    def linreg(self,x,y):
+        slope, intercept , r_value, p_value, std_err = stats.linregress(x,y)
+        print("steady state production rate calculated: %.2f" % slope + " proteins/s")
+        self.fitness = slope
+        return self.fitness

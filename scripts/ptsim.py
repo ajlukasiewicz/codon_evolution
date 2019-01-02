@@ -1,9 +1,16 @@
+#!/usr/bin/env python
+'''
+Simulate protein production using pinetree
+Author: Alexandra Lukasiewicz
+'''
 
+import argparse
 import numpy as np
 import pinetree as pt
 import transcripts
 from transcripts import Transcript
 
+#-------------------------------------------------------------------------------
 
 def execute(outfile,gene_rates,gene_length):
     sim = pt.Model(cell_volume=8e-16)
@@ -19,13 +26,24 @@ def execute(outfile,gene_rates,gene_length):
 
 
 def main():
+    parser = argparse.ArgumentParser(description='simulation output')
+    parser.add_argument(
+         '-t',
+         action='store',
+         dest='t',
+         required=True,
+         type=str,
+         help="simulated generation number",
+         )
+    options = parser.parse_args()
+
     test_transcript = Transcript(120)
     print(test_transcript)
     test_transcript_weights = test_transcript.random_codons()
     test_transcript_weights = np.repeat(test_transcript_weights,3)
     print(test_transcript_weights)
     transcript_length = len(test_transcript_weights )#include this in simulation
-    execute("test_counts" , test_transcript_weights, transcript_length)
+    execute("generaton " + options.t , test_transcript_weights, transcript_length)
 
 if __name__ == "__main__":
     main()
