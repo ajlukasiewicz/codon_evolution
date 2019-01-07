@@ -67,14 +67,16 @@ def main():
     i = 0
     gen=0
     N=2 #population size
-    popA = Transcript(120,gen)
-    popA_weights = popA.random_codons()
 
     #Write data headers
-    transcript_data = ['Generation','% Slow','% Fast','rate','transcript \n']
+    transcript_data = ['Generation,% Slow,% Fast,rate,transcript \n']
 
     while i <= max_generations:
-        gen+=1
+
+        #Initialize model with random transcript
+        if gen == 0:
+            popA = Transcript(120,gen)
+            popA_weights = popA.random_codons()
 
         #Create and evaluate original transcript
         ptsim.simulate(gen, 'popA', popA_weights)
@@ -90,11 +92,15 @@ def main():
         #Compare production rates and calculate probability of mutation acceptance
         probability = calc_prob_scores(popB_fitness,popA_fitness,N)
         print(probability)
-        if probability == 1.0:
+
+        if probability >= float(1.0):
             popA_weights = popB_weights
-            i+=1
+
         else:
             popA_weights = popA_weights
+
+        gen+=1
+        i+=1
 
     with open('transcript_stats.csv', 'w') as f:
         f.writelines(transcript_data)
