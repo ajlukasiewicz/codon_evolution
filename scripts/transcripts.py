@@ -25,3 +25,8 @@ class Transcript:
         for i in range(0,self.length):
             self.weights.append(float(rate))
         return self.weights
+
+    def mutate(self):
+        n = np.random.randint(0,self.length)
+        m = randint(0,2)
+        transcript.weights.insert(n,rates[m])

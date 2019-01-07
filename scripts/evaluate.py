@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
-```This script caclulates steady state protein production rate```
 import csv
 import math
+
 import numpy as np
 import pandas as pd
 from scipy import stats
 
 #-------------------------------------------------------------------------------
-class evalSteadyState:
-#   imports table from pinetree output and calculates protein production rate at steady state
+
+# Imports table from pinetree output and calculates protein production rate
+# at steady state
+class EvalSteadyState:
     def __init__(self):
         self.time = []
         self.ribosome_counts = []
@@ -49,12 +51,15 @@ class evalSteadyState:
     def ribo_slope(self,times,ribosome_counts):
         for i in range(len(times)):
             if i <= len(times) - 3:
-                self.slopes.append(float(ribosome_counts[i+1] - ribosome_counts[i])/(times[i+1]-times[i]))
+                self.slopes.append(float(ribosome_counts[i+1]
+                                        - ribosome_counts[i])
+                                        /(times[i+1]-times[i]))
         print("slopes calculated...")
         return self.slopes
 
     def steady_state(self,times,slopes,ribosome_counts,protein_counts):
-        '''find where the slope of ribosome counts has leveled at zero, calculate the protein production rate after that point'''
+        '''find where the slope of ribosome counts has leveled at zero,
+            calculate the protein production rate after that point'''
         for i in range(len(times)):
             average_slope = np.average(self.slopes[i:i+6]) #average of 5 points in list
             if math.fabs(average_slope) <= 0.01 and i <= (len(times)-10): #finds slopes that were calculated closely around 0

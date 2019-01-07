@@ -3,12 +3,13 @@
 Simulate protein production using pinetree
 Author: Alexandra Lukasiewicz
 '''
-
 import argparse
 import numpy as np
+
 import pinetree as pt
-import transcripts
-from transcripts import Transcript
+
+# import transcripts
+# from transcripts import Transcript
 
 #-------------------------------------------------------------------------------
 
@@ -25,25 +26,25 @@ def execute(outfile,gene_rates,gene_length):
     sim.simulate(time_limit=100, time_step=1, output=outfile + "_counts.tsv")
 
 
-def main():
-    parser = argparse.ArgumentParser(description='simulation output')
-    parser.add_argument(
-         '-t',
-         action='store',
-         dest='t',
-         required=True,
-         type=str,
-         help="simulated generation number",
-         )
-    options = parser.parse_args()
-
-    test_transcript = Transcript(120)
-    print(test_transcript)
-    test_transcript_weights = test_transcript.random_codons()
-    test_transcript_weights = np.repeat(test_transcript_weights,3)
-    print(test_transcript_weights)
-    transcript_length = len(test_transcript_weights )#include this in simulation
-    execute("generaton " + options.t , test_transcript_weights, transcript_length)
+def simulate(gen, transcript_weights):
+    # parser = argparse.ArgumentParser(description='simulation output')
+    # parser.add_argument(
+    #      '-t',
+    #      action='store',
+    #      dest='t',
+    #      required=True,
+    #      type=str,
+    #      help="simulated generation number",
+    #      )
+    # options = parser.parse_args()
+    #
+    # test_transcript = Transcript(120)
+    # print(test_transcript)
+    # test_transcript_weights = test_transcript.random_codons()
+    transcript_weights = np.repeat(transcript_weights,3)
+    print(transcript_weights)
+    transcript_length = len(transcript_weights)
+    execute("generation_" + str(gen), transcript_weights, transcript_length)
 
 if __name__ == "__main__":
     main()
