@@ -26,25 +26,11 @@ def execute(outfile,gene_rates,gene_length):
     sim.simulate(time_limit=100, time_step=1, output=outfile + "_counts.tsv")
 
 
-def simulate(gen, transcript_weights):
-    # parser = argparse.ArgumentParser(description='simulation output')
-    # parser.add_argument(
-    #      '-t',
-    #      action='store',
-    #      dest='t',
-    #      required=True,
-    #      type=str,
-    #      help="simulated generation number",
-    #      )
-    # options = parser.parse_args()
-    #
-    # test_transcript = Transcript(120)
-    # print(test_transcript)
-    # test_transcript_weights = test_transcript.random_codons()
+def simulate(gen, pop, transcript_weights):
     transcript_weights = np.repeat(transcript_weights,3)
     print(transcript_weights)
     transcript_length = len(transcript_weights)
-    execute("generation_" + str(gen), transcript_weights, transcript_length)
+    execute("generation_" + str(gen) + '_' + str(pop), transcript_weights, transcript_length)
 
 if __name__ == "__main__":
     main()
