@@ -54,7 +54,6 @@ class EvalSteadyState:
                 self.slopes.append(float(ribosome_counts[i+1]
                                         - ribosome_counts[i])
                                         /(times[i+1]-times[i]))
-        print("slopes calculated...")
         return self.slopes
 
     def steady_state(self,times,slopes,ribosome_counts,protein_counts):
@@ -63,9 +62,6 @@ class EvalSteadyState:
         for i in range(len(times)):
             average_slope = np.average(self.slopes[i:i+6]) #average of 5 points in list
             if math.fabs(average_slope) <= 0.01 and i <= (len(times)-10): #finds slopes that were calculated closely around 0
-                print("time: %.2f " % times[i])
-                print("free ribosomes: %.2f " % self.ribosome_counts[i])
-                print("amount of proteinP produced: %.2f" % self.protein_counts[i])
                 self.y = protein_counts[i:len(protein_counts)]
                 self.x = times[i:len(protein_counts)]
                 break
@@ -73,6 +69,5 @@ class EvalSteadyState:
 
     def linreg(self,x,y):
         slope, intercept , r_value, p_value, std_err = stats.linregress(x,y)
-        print("steady state production rate calculated: %.2f" % slope + " proteins/s")
         self.fitness = slope
         return self.fitness
