@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import csv
 import math
 
@@ -51,9 +52,10 @@ class EvalSteadyState:
     def ribo_slope(self,times,ribosome_counts):
         for i in range(len(times)):
             if i <= len(times) - 3:
-                self.slopes.append(float(ribosome_counts[i+1]
-                                        - ribosome_counts[i])
-                                        /(times[i+1]-times[i]))
+                try:
+                    self.slopes.append((ribosome_counts[i+1] - ribosome_counts[i]) / (times[i+1]-times[i]))
+                except ZeroDivisionError: 
+                     self.slopes.append(0)
         return self.slopes
 
     def steady_state(self,times,slopes,ribosome_counts,protein_counts):
@@ -67,7 +69,7 @@ class EvalSteadyState:
                 break
         return self.x, self.y
 
-    def linreg(self,x,y):
-        slope, intercept , r_value, p_value, std_err = stats.linregress(x,y)
+    def linreg(self, x, y):
+        slope, intercept, r_value, p_value, std_err = stats.linregress(x,y)
         self.fitness = slope
         return self.fitness
