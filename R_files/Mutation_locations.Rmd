@@ -1,0 +1,45 @@
+---
+title: "Changes in transcript location over 1000 generations"
+author: "Alex Lukasiewicz"
+date: "1/31/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(cowplot)
+library(gganimate)
+library(viridis)
+library(transformr)
+library(forcats)
+```
+
+With the varying codon speeds settling on 25 to 50 
+
+```{r}
+transcript_changes <- read.csv('codon_evolution/data/location_stats_25.0_50.0.csv', header = TRUE)
+transcript_changes <- as.data.frame(transcript_changes)
+head(transcript_changes)
+RBS <- ggplot(transcript_changes, aes(x = Generation, y = RBS, group = 1)) + geom_point() + geom_smooth(method = 'lm', se = FALSE, fullrange = TRUE, color = '#2ca25f', size = 0.5) 
+RBS
+ORF <- ggplot(transcript_changes, aes(x = Generation, y = ORF, group = 1)) + geom_point() +  geom_smooth(method = 'lm', se = FALSE, fullrange = TRUE, color = '#2ca25f', size = 0.5)
+ORF
+Term <- ggplot(transcript_changes, aes(x = Generation, y = Terminator, group = 1)) + geom_point() + geom_smooth(method = 'lm', se = FALSE, fullrange = TRUE, color = '#2ca25f', size = 0.5)
+Term
+
+```
+
+
+
+Facet wrapping
+
+```{r}
+transcript_changes <- read.csv('codon_evolution/data/location_stats_25.0_50.0_facet_trans.csv', header = TRUE)
+transcript_changes <- as.data.frame(transcript_changes)
+head(transcript_changes)
+transcript_loc <- ggplot(transcript_changes, aes(x=Generation, y= Fast.Codons)) + geom_point(size = 0.75) + geom_smooth(method = 'lm', se = FALSE, fullrange = TRUE, color = '#2ca25f', size = 0.5, linetype = 'dashed') + facet_wrap(~ fct_rev(Location)) + scale_color_viridis_d() +theme_bw() + labs(title = 'Change in fast codon accumulation by transcript location', x = 'generation',  y = 'Fast codons in transcript')
+transcript_loc
+save_plot("transcript_level_changes.png", transcript_loc, base_aspect_ratio = 1.5)
+```
+```

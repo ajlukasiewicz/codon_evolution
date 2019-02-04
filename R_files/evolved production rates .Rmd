@@ -1,0 +1,60 @@
+---
+title: "Evolved protein production rates"
+author: "Alex Lukasiewicz"
+date: "1/9/2019"
+output: pdf_document
+---
+### protein production rate and transcript changes over 50 generations of evolution
+
+```{r, include = FALSE}
+library(tidyverse)
+library(cowplot)
+library(gganimate)
+library(viridis)
+```
+
+plot protein production rates over generations 
+```{r}
+transcript_metrics <- read.csv("codon_evolution/scripts/transcript_stats.csv", header = FALSE)
+transcript_metrics <- as.data.frame(transcript_metrics[c(1:4)])
+colnames(transcript_metrics) <- as.character(unlist(transcript_metrics[1,]))
+transcript_metrics <- transcript_metrics[-1, ]
+transcript_metrics <- separate(data = transcript_metrics,col = 'Generation',into = 'Generation',sep = '_')
+transcript_metrics
+codon_plot <- ggplot(data = transcript_metrics, aes(x =Generation, y= Rate, group = 1)) + geom_line(color='blue') + ggtitle("Protein production rate over 500 generations")
+codon_plot
+save_plot("500_gen_production_rate.png", codon_plot, base_aspect_ratio = 1.3)
+```
+
+Plot changes in slow and fast codons
+
+```{r}
+codon_metrics <- transcript_metrics[c('Generation','Pct_Slow','Pct_Fast')]
+codon_metrics <- transform(codon_metrics, Pct_Slow = as.character(Pct_Slow), Pct_Fast = as.character(Pct_Fast))
+head(codon_metrics)
+codon_chart <- ggplot(codon_metrics, aes(x = Generation)) + geom_line(aes(y = Pct_Slow, group = 1), color = 'red') + geom_line(aes(y=Pct_Fast, group = 1), color = 'green') + ylab('% of transcript') + xlab('Generations') + ggtitle('Overall changes in codon % over 500 generations')
+codon_chart
+```
+
+fast:slow codon rate ratios- single generation protein production screen
+
+```{r}
+fast_slow <- read.csv("codon_evolution/scripts/transcript_stats_011619.csv", header = FALSE)
+fast_slow <- as.data.frame(fast_slow[c(1:3)])
+colnames(fast_slow) <- as.character(unlist(fast_slow[1,]))
+fast_slow <- fast_slow[-1, ]
+fast_slow[, 1] <- as.numeric(as.character( fast_slow[, 1] ))
+fast_slow[, 2] <- as.numeric(as.character( fast_slow[, 2] ))
+fast_slow[, 3] <- as.numeric(as.character( fast_slow[,3]  ))
+fast_slow <- as.tibble(fast_slow)
+fast_slow <- mutate(fast_slow, ratio_slow_fast = slow_rt/fast_rt)
+fast_slow <- arrange(fast_slow, prod_rt)
+head(fast_slow)
+
+ratio_plot <- ggplot(fast_slow, aes(x = prod_rt, y= ratio_slow_fast, group = 1)) + geom_point(aes(colour = prod_rt)) + scale_color_viridis() + ylab('ratio of slow to fast codon speed') + xlab('production rate') + theme(legend.position = 'none') +
+  ggtitle('Protein production rates relative to codon speed') +
+  theme_bw()
+ratio_plot
+save_plot("array_production_rates.png", ratio_plot, base_aspect_ratio = 1.3)
+#geom_smooth(method = 'lm', se = FALSE, fullrange = TRUE, color = '#2ca25f')
+```

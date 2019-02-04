@@ -1,0 +1,3 @@
+Generation,Population,Slow_Count,Fast_Count,Mut_Loc,Prod_rt,Min 
+0,popB,60,60,33,86.0,0.144,86.0
+1,popB,59,61,37,100.0,0.144,86.0
