@@ -68,6 +68,7 @@ def write_speed_locations(gen,transcript,location_summary, min):
                             + str(term.count(min)) + '\n')
     return location_summary
 
+
 def main():
     parser = argparse.ArgumentParser(description='run simulation for x generations')
     parser.add_argument(
@@ -79,22 +80,40 @@ def main():
          help="Set the number of generations to evolve for",
          )
     parser.add_argument(
-         '-r',
+         '-s',
          action='store',
-         dest='r',
+         dest='s',
          required=False,
          default=0.5,
          type=float,
          help="Set the slow rate for the system, default = 0.5",
          )
     parser.add_argument(
-         '-m',
+         '-f',
          action='store',
-         dest='m',
+         dest='f',
          required=False,
          default=1.0,
          type=float,
          help="Set the fast rate for the system, default = 1.0",
+         )
+    parser.add_argument(
+         '-r',
+         action='store',
+         dest='r',
+         required=False,
+         default=5,
+         type=int,
+         help="Set number of ribosomes in simulation, default = 5",
+         )
+    parser.add_argument(
+         '-sp',
+         action='store',
+         dest='sp',
+         required=False,
+         default=30,
+         type=int,
+         help="Set the ribosome speed in simulation, default = 30",
          )
       
     options = parser.parse_args()
@@ -106,11 +125,11 @@ def main():
     N = 10   # population size
 
     # Write data headers
-    transcript_data = ['Generation,Population,Slow_Count,Fast_Count,Mut_Loc,Prod_rt,Min \n']
+    transcript_data = ['Generation,Population,Slow_Count,Fast_Count,Mut_Loc,Mutation,Prod_rt,Min \n']
     location_summary = ['Generation,RBS,ORF,Terminator \n']
+    outfasta = []
 
-
-    rates = [options.r, options.m]
+    rates = [options.s, options.f]
 
     while i <= max_generations:
 
@@ -120,10 +139,10 @@ def main():
             popA_weights = popA.random_codons()
 
         # Mutate original transcript and evaluate performance
-        popB_weights, mutation_loc, mutation = mutate(popA_weights[:],options.r,options.m)
+        popB_weights, mutation_loc, mutation = mutate(popA_weights[:],options.s,options.f)
 
         # Create and evaluate original transcript
-        pt.simulate(gen, popA_weights, popB_weights, rates)
+        pt.simulate(gen, popA_weights, popB_weights, rates, options.r, options.sp)
         popA_fitness = Decimal(fit_eval.main("../data/generation_" + str(gen) + '_' + str(rates[0]) + '_' + str(rates[1]) + '_counts.tsv', 'proteinA')).quantize(Decimal('.001'), rounding = ROUND_HALF_EVEN)
         popB_fitness = Decimal(fit_eval.main("../data/generation_" + str(gen)+ '_' +  str(rates[0]) + '_' + str(rates[1]) + '_counts.tsv', 'proteinB')).quantize(Decimal('.001'), rounding = ROUND_HALF_EVEN)
         
@@ -135,11 +154,13 @@ def main():
         if probability == Decimal('1.000') or p <= probability:
             write_transcript_data(transcript_data, popB_weights, gen, 'popB', popB_fitness, mutation_loc, mutation, options.m, options.r)
             popA_weights = popB_weights[:]
+            outfasta.append(">Generation " + str(gen) + "\n" + str(popB_weights) + "\n" )
             write_speed_locations(gen,popB_weights,location_summary, options.r)
 
         else:
-            write_transcript_data(transcript_data, popA_weights, gen, 'popA', popA_fitness, 0, 0, options.m, options.r)
+            write_transcript_data(transcript_data, popA_weights, gen, 'popA', popA_fitness, 0, 0, options.s, options.f)
             popA_weights = popA_weights
+            outfasta.append(">Generation " + str(gen) + "\n" + str(popA_weights) + "\n" )
             write_speed_locations(gen,popA_weights,location_summary, options.r)
 
         if gen == max_generations:
@@ -152,8 +173,8 @@ def main():
         f.writelines(transcript_data)
         f.close()
     
-    with open('../data/final_fitness_' + str(rates[0]) + '_' +  str(rates[1]) + '.csv', 'w') as f:
-        f.writelines(final_fit)
+    with open('../data/transcripts' + str(rates[0]) + '_' +  str(rates[1]) + '.fasta', 'w') as f:
+        f.writelines(outfasta)
         f.close()
     
     with open('../data/location_stats_'+ str(rates[0]) + '_' +  str(rates[1]) + '.csv','w') as f:

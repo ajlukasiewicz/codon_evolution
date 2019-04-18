@@ -18,7 +18,7 @@ library(transformr)
 
 An initial screen of codon speeds yielded the following:
 ```{r}
-fast_slow <- read.csv("scripts/transcript_stats_011619.csv", header = FALSE)
+fast_slow <- read.csv("../scripts/transcript_stats_011619.csv", header = FALSE)
 fast_slow <- as.data.frame(fast_slow[c(1:3)])
 colnames(fast_slow) <- as.character(unlist(fast_slow[1,]))
 fast_slow <- fast_slow[-1, ]
@@ -36,7 +36,7 @@ plot(ratio_plot)
 
 To optimize transcripts at a variety of protein production rates, evolved each rate ratio for 50 generations. plot: final rates, overall stochasticity of rate ratio (measure changes in production rate for each ratio)
 ```{r}
-evolved_rate_array <- read.csv("data/codon_optimization_data/final_fitness_all.csv", header = FALSE)
+evolved_rate_array <- read.csv("../data/codon_optimization_data/final_fitness_all.csv", header = FALSE)
 evolved_rate_df <- as.data.frame(evolved_rate_array)
 evolved_rate_df[, 1] <- as.numeric(as.character( evolved_rate_df[, 1] ))
 evolved_rate_df[, 2] <- as.numeric(as.character( evolved_rate_df[, 2] ))
@@ -54,7 +54,7 @@ save_plot("array_evolved_production_rates.png", ratio_plot, base_aspect_ratio = 
 To determine the overall variation in protein production as a factor of the ratio of slow:fast codon speed, the average change in protein production rate was calculated. The transcript with the minimal variation in production rates 
 
 ```{r, include = FALSE}
-transcript_opt <- read.csv('data/codon_optimization_data/codon_opt.csv', header = TRUE)
+transcript_opt <- read.csv('../data/codon_optimization_data/codon_opt.csv', header = TRUE)
 transcript_opt <- as.data.frame(transcript_opt)
 transcript_summary <- transcript_opt %>% group_by(slow.codon.speed,change.in.production.rate) %>% summarise(mean = mean(change.in.production.rate), sd = sd(change.in.production.rate))
 transcript_summary <- arrange(transcript_summary, mean, slow.codon.speed)
@@ -65,9 +65,9 @@ transcript_summary <- arrange(transcript_summary, mean, slow.codon.speed)
 Additionally, this may be possible by plotting the difference between the initial production rate and the final 
 
 ```{r}
-dif <- read.csv('data/codon_optimization_data/change_in_rt.csv',header = TRUE)
+dif <- read.csv('../data/codon_optimization_data/change_in_rt.csv',header = TRUE)
 dif <- as.data.frame(dif)
-dif_plot <- ggplot(dif, aes(x= min.speed, y = change.in.production.rate, group = 1)) + geom_point(aes(color = min.speed)) + scale_color_viridis() + xlab('slow codon speed') + ylab('change in rate from generations 1 to 50') + theme(legend.position = 'none') + ggtitle('Overall changes in production rate') + labs(color = 'slow codon speed') + theme_bw()
+dif_plot <- ggplot(dif, aes(x= ï..min.speed, y = change.in.production.rate, group = 1)) + geom_point(aes(color = ï..min.speed)) + scale_color_viridis() + xlab('slow codon speed') + ylab('change in rate from generations 1 to 50') + theme(legend.position = 'none') + ggtitle('Overall changes in production rate') + labs(color = 'slow codon speed') + theme_bw()
 plot(dif_plot)
 #dif_plot <- dif_plot + geom_smooth(method = 'lm', se = FALSE, fullrange = TRUE, color = '#2ca25f') 
 save_plot("changes_evolved_production_rates.png", dif_plot, base_aspect_ratio = 1.3)
@@ -79,7 +79,7 @@ Next, to observe the changes in codon usage for each rate pairing over the first
 ##Well, what if we evolve each rate pairing for 500 generations instead??
 
 ```{r}
-transcript_stats<- read.csv("data/presentation_datasets/transcript_stats_500_gen.csv", header = FALSE, strip.white = TRUE)
+transcript_stats<- read.csv("../data/presentation_datasets/transcript_stats_500_gen.csv", header = FALSE, strip.white = TRUE)
 transcript_stats <- as.data.frame(transcript_stats[c(2:8)])
 colnames(transcript_stats) <- as.character(unlist(transcript_stats[1,]))
 transcript_stats <- transcript_stats[-1, ]
@@ -117,7 +117,7 @@ save_plot("change_in_fast_codon_usage_500_gen_lineplot.png", percentile_plot, ba
 ```
 
 ```{r}
-transcript_stats<- read.csv("data/presentation_datasets/transcript_stats_all_new.csv", header = TRUE)
+transcript_stats<- read.csv("../data/presentation_datasets/transcript_stats_all_new.csv", header = TRUE)
 head(transcript_stats)
 transcript_stats_bin <- transcript_stats %>% mutate(percentile = cut(Min, 
                                        breaks = c(0,10,20,30,40,50,60,70,80,90,100), 
@@ -145,7 +145,7 @@ save_plot("change_in_fast_codon_usage.png", difference_plot, base_aspect_ratio =
 But, what about changes in protein production??
 
 ```{r}
-evolved_rate_array <- read.csv("data/presentation_datasets/transcript_stats_all_new.csv", header = TRUE)
+evolved_rate_array <- read.csv("../data/presentation_datasets/transcript_stats_all_new.csv", header = TRUE)
 evolved_rate_df <- as.data.frame(evolved_rate_array)
 evolved_rate_df <- arrange(evolved_rate_df, Min)
 ratio_plot <- ggplot(evolved_rate_df, aes(x = Min, y= Prod_rt, group = 1)) + geom_point(aes(colour = Min)) + scale_color_viridis() + ylab('production rate') + xlab('slow codon rate') + theme(legend.position = 'none') +
@@ -159,7 +159,7 @@ save_plot("array_evolved_production_rates.png", ratio_plot, base_aspect_ratio = 
 
 
 ```{r}
-evolved_rate_array <- read.csv("data/presentation_datasets/final_fitness_1000_gen.csv", header = TRUE)
+evolved_rate_array <- read.csv("../data/presentation_datasets/final_fitness_1000_gen.csv", header = TRUE)
 evolved_rate_df <- as.data.frame(evolved_rate_array)
 head(evolved_rate_array)
 ratio_plot <- ggplot(evolved_rate_df, aes(x = Min, y= Rate, group = 1)) + geom_point(aes(colour = Min)) + scale_color_viridis() + ylab('protein production rate') + xlab('slow codon rate') + theme(legend.position = 'none') +

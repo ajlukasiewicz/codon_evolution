@@ -1,0 +1,60 @@
+---
+title: "Pooled transcripts over 300 generations"
+author: "Alex Lukasiewicz"
+date: "4/17/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(cowplot)
+library(gganimate)
+library(viridis)
+library(transformr)
+```
+
+## Evolved protein production rates 
+
+Initially, the evolution script evolved and evaluated each transcript individually. This is a change in the way that Ashley has been modeling codon usage and ribosome density. 
+This plot shows that although the production rate continues to increase, the levels of fast and slow codons present in the transcript do not change. Why could that be? Do we see this phenomenon over the course of longer generations? With replicates??
+
+```{r, echo = FALSE}
+pooled_prod_rates <- read.csv("../data/pool_test/transcript_stats_0.5_1.0.csv", header = TRUE, sep = ",")
+pooled_prod_rates <- as.data.frame(pooled_prod_rates)
+head(pooled_prod_rates)
+#gather speeds 
+prod_rates.long <- gather(pooled_prod_rates, key = "speed", value = "counts",Fast_Count, Slow_Count)
+prod_rates.long <- prod_rates.long %>% mutate(production_rate = Prod_rt * 1000)
+head(prod_rates.long)
+#plot changes in speed
+counts_rates_plot <- ggplot(prod_rates.long, aes(x = Generation, y = counts , color = speed)) + geom_line() + theme_bw()
+
+counts_rates_plot <- counts_rates_plot + geom_line(data = prod_rates.long, aes(x = Generation, y = production_rate), color = 'black', linetype = "dashed")
+#geom_smooth(method = 'loess', se = FALSE, fullrange = TRUE)
+counts_rates_plot
+
+```
+
+##Increasing timespan of evolution
+
+Next, I wanted to see the effects that an increased timespan had on the observed protein production rate and fast or slow codon usage. It appears that the system reaches an equilibruim, where the increase in fast or slow codons has no effect on the overall production rate. 
+
+```{r, echo = FALSE}
+pooled_prod_rates <- read.csv("../data/transcript_stats_0.5_1.0.csv", header = TRUE, sep = ",")
+pooled_prod_rates <- as.data.frame(pooled_prod_rates)
+head(pooled_prod_rates)
+#gather speeds 
+prod_rates.long <- gather(pooled_prod_rates, key = "speed", value = "counts",Fast_Count, Slow_Count)
+prod_rates.long <- prod_rates.long %>% mutate(production_rate = Prod_rt * 1000)
+head(prod_rates.long)
+#plot changes in speed
+counts_rates_plot <- ggplot(prod_rates.long, aes(x = Generation, y = counts , color = speed)) + geom_line() + theme_bw()
+
+counts_rates_plot <- counts_rates_plot + geom_line(data = prod_rates.long, aes(x = Generation, y = production_rate), color = 'black', linetype = "dashed")
+#geom_smooth(method = 'loess', se = FALSE, fullrange = TRUE)
+counts_rates_plot
+```
+
+## Next steps
+
+Is it important to visualize where these changes are occuring? What if the equilibrium state has been reached due to the number of ribosomes in the system?
