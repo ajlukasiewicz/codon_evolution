@@ -32,7 +32,6 @@ counts_rates_plot <- ggplot(prod_rates.long, aes(x = Generation, y = counts , co
 counts_rates_plot <- counts_rates_plot + geom_line(data = prod_rates.long, aes(x = Generation, y = production_rate), color = 'black', linetype = "dashed")
 #geom_smooth(method = 'loess', se = FALSE, fullrange = TRUE)
 counts_rates_plot
-
 ```
 
 ##Increasing timespan of evolution
@@ -40,7 +39,7 @@ counts_rates_plot
 Next, I wanted to see the effects that an increased timespan had on the observed protein production rate and fast or slow codon usage. It appears that the system reaches an equilibruim, where the increase in fast or slow codons has no effect on the overall production rate. 
 
 ```{r, echo = FALSE}
-pooled_prod_rates <- read.csv("../data/transcript_stats_0.5_1.0.csv", header = TRUE, sep = ",")
+pooled_prod_rates <- read.csv("../data/pooled_data_1/transcript_stats_0.5_1.0.csv", header = TRUE, sep = ",")
 pooled_prod_rates <- as.data.frame(pooled_prod_rates)
 head(pooled_prod_rates)
 #gather speeds 
@@ -53,8 +52,34 @@ counts_rates_plot <- ggplot(prod_rates.long, aes(x = Generation, y = counts , co
 counts_rates_plot <- counts_rates_plot + geom_line(data = prod_rates.long, aes(x = Generation, y = production_rate), color = 'black', linetype = "dashed")
 #geom_smooth(method = 'loess', se = FALSE, fullrange = TRUE)
 counts_rates_plot
+save_plot("ribosome_num_12_production rate.png",counts_rates_plot, base_aspect_ratio = 1.3)
+
+
+#is there a correlation between the rate of production and the number of slow codons in the system
+cor(select(pooled_prod_rates, Prod_rt, Slow_Count))
+
+
+ggplot(pooled_prod_rates, aes(x=Slow_Count, y=Prod_rt)) +
+  geom_point() + 
+  theme_bw()
 ```
 
 ## Next steps
 
 Is it important to visualize where these changes are occuring? What if the equilibrium state has been reached due to the number of ribosomes in the system?
+
+```{r, echo = FALSE}
+pooled_prod_rates <- read.csv("../data/pool_test/transcript_stats_0.5_1.0.csv", header = TRUE, sep = ",")
+pooled_prod_rates <- as.data.frame(pooled_prod_rates)
+head(pooled_prod_rates)
+mutation_location <- ggplot(pooled_prod_rates, aes(x=Generation, y = Mut_Loc, color = Mutation)) + geom_point() 
+mutation_location
+
+
+```
+
+
+
+
+
+

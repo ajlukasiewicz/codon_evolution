@@ -152,7 +152,7 @@ def main():
         probability = Decimal(calc_prob_scores(popB_fitness, popA_fitness, N)).quantize(Decimal('.001'), rounding = ROUND_HALF_EVEN)
 
         if probability == Decimal('1.000') or p <= probability:
-            write_transcript_data(transcript_data, popB_weights, gen, 'popB', popB_fitness, mutation_loc, mutation, options.m, options.r)
+            write_transcript_data(transcript_data, popB_weights, gen, 'popB', popB_fitness, mutation_loc, mutation, options.s, options.f)
             popA_weights = popB_weights[:]
             outfasta.append(">Generation " + str(gen) + "\n" + str(popB_weights) + "\n" )
             write_speed_locations(gen,popB_weights,location_summary, options.r)
@@ -173,7 +173,7 @@ def main():
         f.writelines(transcript_data)
         f.close()
     
-    with open('../data/transcripts' + str(rates[0]) + '_' +  str(rates[1]) + '.fasta', 'w') as f:
+    with open('../data/transcripts' + '_' + str(rates[0]) + '_' +  str(rates[1]) + '.fasta', 'w') as f:
         f.writelines(outfasta)
         f.close()
     
