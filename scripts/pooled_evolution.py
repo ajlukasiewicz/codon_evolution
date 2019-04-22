@@ -6,6 +6,7 @@
 import argparse
 from decimal import Decimal, ROUND_HALF_EVEN
 import numpy as np
+import subprocess
 from time import time
 import sys
 
@@ -115,10 +116,21 @@ def main():
          type=int,
          help="Set the ribosome speed in simulation, default = 30",
          )
+    parser.add_argument(
+         '-o',
+         action='store',
+         dest='o',
+         required=True,
+         default=30,
+         type=str,
+         help="output directory name",
+         )
       
     options = parser.parse_args()
     max_generations = options.g
     t0 = time()
+
+    subprocess.call("mkdir ../data/" + str(options.o), shell = True)
 
     i = 0
     gen = 0
@@ -142,9 +154,15 @@ def main():
         popB_weights, mutation_loc, mutation = mutate(popA_weights[:],options.s,options.f)
 
         # Create and evaluate original transcript
-        pt.simulate(gen, popA_weights, popB_weights, rates, options.r, options.sp)
-        popA_fitness = Decimal(fit_eval.main("../data/generation_" + str(gen) + '_' + str(rates[0]) + '_' + str(rates[1]) + '_counts.tsv', 'proteinA')).quantize(Decimal('.001'), rounding = ROUND_HALF_EVEN)
-        popB_fitness = Decimal(fit_eval.main("../data/generation_" + str(gen)+ '_' +  str(rates[0]) + '_' + str(rates[1]) + '_counts.tsv', 'proteinB')).quantize(Decimal('.001'), rounding = ROUND_HALF_EVEN)
+        pt.simulate(gen, popA_weights, popB_weights, rates, options.r, options.sp,options.o)
+        popA_fitness = Decimal(fit_eval.main("../data/" + str(options.o) + "/generation_" 
+                                                + str(gen) + '_' 
+                                                + str(rates[0]) + '_' 
+                                                + str(rates[1]) + '_counts.tsv', 'proteinA')).quantize(Decimal('.001'), rounding = ROUND_HALF_EVEN)
+        popB_fitness = Decimal(fit_eval.main("../data/" + str(options.o) + "/generation_" 
+                                                + str(gen)+ '_' 
+                                                + str(rates[0]) + '_' 
+                                                + str(rates[1]) + '_counts.tsv', 'proteinB')).quantize(Decimal('.001'), rounding = ROUND_HALF_EVEN)
         
         p = Decimal(np.random.uniform()).quantize(Decimal('.001'), rounding = ROUND_HALF_EVEN)
         print(p)
@@ -169,15 +187,15 @@ def main():
         gen += 1
         i += 1
 
-    with open('../data/transcript_stats_' + str(rates[0]) + '_' +  str(rates[1]) + '.csv', 'w') as f:
+    with open('../data/' + str(options.o) + '/transcript_stats_' + str(rates[0]) + '_' +  str(rates[1]) + '.csv', 'w') as f:
         f.writelines(transcript_data)
         f.close()
     
-    with open('../data/transcripts' + '_' + str(rates[0]) + '_' +  str(rates[1]) + '.fasta', 'w') as f:
+    with open('../data/' + str(options.o) + '/transcripts' + '_' + str(rates[0]) + '_' +  str(rates[1]) + '.fasta', 'w') as f:
         f.writelines(outfasta)
         f.close()
     
-    with open('../data/location_stats_'+ str(rates[0]) + '_' +  str(rates[1]) + '.csv','w') as f:
+    with open('../data/' + str(options.o) + '/location_stats_'+ str(rates[0]) + '_' +  str(rates[1]) + '.csv','w') as f:
         f.writelines(location_summary)
         f.close()
 
