@@ -4,8 +4,8 @@
 # Date: 1/10/2019
 
 import argparse
-from decimal import Decimal, ROUND_HALF_EVEN
 import numpy as np
+import math
 import subprocess
 from time import time
 import sys
@@ -19,11 +19,12 @@ import fit_eval
 
 # Introduce mutation in transcript
 def mutate(transcript,min,max):
+    transcript2 = transcript.copy()
     rates = [min, max]
-    n = np.random.randint(0, len(transcript))
+    n = np.random.randint(0, len(transcript2))
     m = np.random.randint(0, 2)
-    transcript[n] = rates[m]
-    return transcript, n, rates[m]
+    transcript2[n] = rates[m]
+    return transcript2, n, rates[m]
 
 
 # Accelerated simulation functions
@@ -32,7 +33,7 @@ def safe_calc(exponent):
         print("system maxed")
         return(sys.float_info.max)
     else:
-        return(Decimal(exponent).exp())
+        return(math.exp(exponent))
 
 
 def calc_prob_scores(stab_mut, stab_org, N):
@@ -42,7 +43,7 @@ def calc_prob_scores(stab_mut, stab_org, N):
     if xj >= xi:
         return(1.0)
     else:
-        exponent = -2 * Decimal(N) * (xi - xj)
+        exponent = -2 * N * (xi - xj)
         return(safe_calc(exponent))
 
 
@@ -58,16 +59,6 @@ def write_transcript_data(transcript_data, transcript, gen, population, rate, mu
                            + str(rate) +  ','
                            + str(slow_speed) + '\n')
     return transcript_data
-
-def write_speed_locations(gen,transcript,location_summary, min):
-    rbs = transcript[0:11]
-    orf = transcript[11:71]
-    term = transcript[71:120]
-    location_summary.append(str(gen) + ',' 
-                            + str(rbs.count(min)) + ',' 
-                            + str(orf.count(min)) + ',' 
-                            + str(term.count(min)) + '\n')
-    return location_summary
 
 
 def main():
@@ -134,53 +125,49 @@ def main():
 
     i = 0
     gen = 0
-    N = 10   # population size
+    N = 10000   # population size
 
     # Write data headers
     transcript_data = ['Generation,Population,Slow_Count,Fast_Count,Mut_Loc,Mutation,Prod_rt,Min \n']
-    location_summary = ['Generation,RBS,ORF,Terminator \n']
     outfasta = []
 
     rates = [options.s, options.f]
-
-    while i <= max_generations:
-
-        # Initialize model with random transcript
-        if gen == 0:
+    
+    # Initialize model with random transcript
+    if gen == 0:
             popA = Transcript(120, gen, rates)
             popA_weights = popA.random_codons()
-
         # Mutate original transcript and evaluate performance
-        popB_weights, mutation_loc, mutation = mutate(popA_weights[:],options.s,options.f)
+            popB_weights, mutation_loc, mutation = mutate(popA_weights, options.s, options.f)
 
+
+    while i <= max_generations:
         # Create and evaluate original transcript
         pt.simulate(gen, popA_weights, popB_weights, rates, options.r, options.sp,options.o)
-        popA_fitness = Decimal(fit_eval.main("../data/" + str(options.o) + "/generation_" 
-                                                + str(gen) + '_' 
-                                                + str(rates[0]) + '_' 
-                                                + str(rates[1]) + '_counts.tsv', 'proteinA')).quantize(Decimal('.001'), rounding = ROUND_HALF_EVEN)
-        popB_fitness = Decimal(fit_eval.main("../data/" + str(options.o) + "/generation_" 
-                                                + str(gen)+ '_' 
-                                                + str(rates[0]) + '_' 
-                                                + str(rates[1]) + '_counts.tsv', 'proteinB')).quantize(Decimal('.001'), rounding = ROUND_HALF_EVEN)
+        popA_fitness = fit_eval.main("../data/" + str(options.o) + "/generation_" + str(gen) + '_' + str(rates[0]) + '_' + str(rates[1]) + '_counts.tsv', 'proteinA')
+        popB_fitness = fit_eval.main("../data/" + str(options.o) + "/generation_"  + str(gen)+ '_'  + str(rates[0]) + '_' + str(rates[1]) + '_counts.tsv', 'proteinB')
+        print(popA_fitness, popB_fitness)
         
-        p = Decimal(np.random.uniform()).quantize(Decimal('.001'), rounding = ROUND_HALF_EVEN)
-        print(p)
         # Compare production rates and calculate probability of mutation acceptance
-        probability = Decimal(calc_prob_scores(popB_fitness, popA_fitness, N)).quantize(Decimal('.001'), rounding = ROUND_HALF_EVEN)
+        p = np.random.uniform()
+        probability = calc_prob_scores(popB_fitness, popA_fitness, N)
+        print(p,probability)
 
-        if probability == Decimal('1.000') or p <= probability:
+        if p <= probability:
             write_transcript_data(transcript_data, popB_weights, gen, 'popB', popB_fitness, mutation_loc, mutation, options.s, options.f)
-            popA_weights = popB_weights[:]
             outfasta.append(">Generation " + str(gen) + "\n" + str(popB_weights) + "\n" )
-            write_speed_locations(gen,popB_weights,location_summary, options.r)
+            popA_weights = popB_weights
+            popB_weights, mutation_loc, mutation = mutate(popA_weights, options.s, options.f)
 
+            
         else:
             write_transcript_data(transcript_data, popA_weights, gen, 'popA', popA_fitness, 0, 0, options.s, options.f)
-            popA_weights = popA_weights
             outfasta.append(">Generation " + str(gen) + "\n" + str(popA_weights) + "\n" )
-            write_speed_locations(gen,popA_weights,location_summary, options.r)
+            popA_weights = popA_weights
+            popB_weights, mutation_loc, mutation = mutate(popA_weights, options.s, options.f)
 
+            
+        print(popA_weights,popB_weights)
         if gen == max_generations:
             final_fit = str(rates[0]) + ',' + str(rates[1]) + ',' + str(popA_fitness) + '\n'
 
@@ -191,12 +178,8 @@ def main():
         f.writelines(transcript_data)
         f.close()
     
-    with open('../data/' + str(options.o) + '/transcripts' + '_' + str(rates[0]) + '_' +  str(rates[1]) + '.fasta', 'w') as f:
+    with open('../data/' + str(options.o) + '/transcripts_' + str(rates[0]) + '_' +  str(rates[1]) + '.fasta', 'w') as f:
         f.writelines(outfasta)
-        f.close()
-    
-    with open('../data/' + str(options.o) + '/location_stats_'+ str(rates[0]) + '_' +  str(rates[1]) + '.csv','w') as f:
-        f.writelines(location_summary)
         f.close()
 
     t1 = time()

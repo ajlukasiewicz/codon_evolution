@@ -25,7 +25,7 @@ def execute(outfile, gene_rates_A, gene_rates_B, gene_length, ribosome_number, r
     transcript_B.add_weights(weights=gene_rates_B)
     sim.register_transcript(transcript_A)
     sim.register_transcript(transcript_B)
-    sim.simulate(time_limit=100, time_step=1, output=outfile + "_counts.tsv")
+    sim.simulate(time_limit=200, time_step=1, output=outfile + "_counts.tsv")
 
 
 def simulate(gen,transcript_weights_A, transcript_weights_B,rates,ribosome_number,ribosome_speed,directory):

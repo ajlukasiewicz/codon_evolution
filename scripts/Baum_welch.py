@@ -7,7 +7,7 @@ alphabet = 5
 ll_bound = 10.0
 
 if len(argv) != 3:
-    print "required input: trainfile testfile"
+    print("required input: trainfile testfile")
     assert(False)
 
 train_file = argv[1]
