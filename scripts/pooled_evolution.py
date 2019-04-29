@@ -7,6 +7,7 @@ import argparse
 import numpy as np
 import math
 import subprocess
+from statistics import mean
 from time import time
 import sys
 
@@ -18,7 +19,7 @@ import fit_eval
 
 
 # Introduce mutation in transcript
-def mutate(transcript,min,max):
+def mutate(transcript, min, max):
     transcript2 = transcript.copy()
     rates = [min, max]
     n = np.random.randint(0, len(transcript2))
@@ -46,9 +47,19 @@ def calc_prob_scores(stab_mut, stab_org, N):
         exponent = -2 * N * (xi - xj)
         return(safe_calc(exponent))
 
+def replicate_simulations(gen, popA_weights, popB_weights, rates, ribosomes, speed, outfile):
+    popA_fit_reps = []
+    popB_fit_reps = []
+    for n in range(0,4):
+        pt.simulate(gen, popA_weights, popB_weights, rates, ribosomes, speed, outfile, n)
+        popA_fit_reps.append(fit_eval.main("../data/" + str(outfile) + "/generation_" + str(gen) + '_' + 'replicate_' + str(n) + '_' + str(rates[0]) + '_' + str(rates[1]) + '_counts.tsv', 'proteinA'))
+        popB_fit_reps.append(fit_eval.main("../data/" + str(outfile) + "/generation_"  + str(gen)+ '_'  + 'replicate_' + str(n) + '_' + str(rates[0]) + '_' + str(rates[1]) + '_counts.tsv', 'proteinB'))
+    popA_finess = mean(popA_fit_reps)
+    popB_fitness = mean(popB_fit_reps)
+    return popA_finess, popB_fitness
 
 # Write transcript metrics to tsv output
-def write_transcript_data(transcript_data, transcript, gen, population, rate, mutation_loc, mutation, fast_speed, slow_speed):
+def write_transcript_data(transcript_data, transcript, gen, population, rate, mutation_loc, mutation, slow_speed, fast_speed):
     fastcodons = transcript.count(fast_speed)
     slowcodons = len(transcript) - fastcodons
     transcript_data.append(str(gen) + ',' + str(population) + ','
@@ -136,16 +147,16 @@ def main():
     # Initialize model with random transcript
     if gen == 0:
             popA = Transcript(120, gen, rates)
-            popA_weights = popA.random_codons()
+            dist = [0.5,0.5]
+            popA_weights = popA.random_with_dist(rates,dist)
         # Mutate original transcript and evaluate performance
             popB_weights, mutation_loc, mutation = mutate(popA_weights, options.s, options.f)
+            print(popA_weights,popB_weights)
 
 
     while i <= max_generations:
         # Create and evaluate original transcript
-        pt.simulate(gen, popA_weights, popB_weights, rates, options.r, options.sp,options.o)
-        popA_fitness = fit_eval.main("../data/" + str(options.o) + "/generation_" + str(gen) + '_' + str(rates[0]) + '_' + str(rates[1]) + '_counts.tsv', 'proteinA')
-        popB_fitness = fit_eval.main("../data/" + str(options.o) + "/generation_"  + str(gen)+ '_'  + str(rates[0]) + '_' + str(rates[1]) + '_counts.tsv', 'proteinB')
+        popA_fitness, popB_fitness = replicate_simulations(gen, popA_weights, popB_weights, rates, options.r, options.sp , options.o)
         print(popA_fitness, popB_fitness)
         
         # Compare production rates and calculate probability of mutation acceptance

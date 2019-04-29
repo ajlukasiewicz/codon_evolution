@@ -28,14 +28,15 @@ def execute(outfile, gene_rates_A, gene_rates_B, gene_length, ribosome_number, r
     sim.simulate(time_limit=200, time_step=1, output=outfile + "_counts.tsv")
 
 
-def simulate(gen,transcript_weights_A, transcript_weights_B,rates,ribosome_number,ribosome_speed,directory):
+def simulate(gen,transcript_weights_A, transcript_weights_B,rates,ribosome_number,ribosome_speed,directory, replicate):
     transcript_A = np.repeat(transcript_weights_A, 3)
     transcript_B = np.repeat(transcript_weights_B, 3)
     transcript_length = len(transcript_A)
     execute("../data/" 
             + str(directory) + "/"
-            + "generation_" 
-            + str(gen) + '_' 
+            + 'generation_' 
+            + str(gen) + '_'
+            + 'replicate_' + str(replicate) + '_' 
             + str(rates[0]) + '_' 
             + str(rates[1]), transcript_A, transcript_B, transcript_length,ribosome_number,ribosome_speed)
 

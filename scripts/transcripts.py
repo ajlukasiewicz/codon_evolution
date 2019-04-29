@@ -20,6 +20,11 @@ class Transcript:
             r = np.random.randint(0, 2)
             self.weights.append(self.rates[r])
         return self.weights
+    
+    def random_with_dist(self, rates, dist):
+        r = np.random.choice(rates, self.length, p = dist)
+        self.weights = r.tolist()
+        return self.weights
 
     def defined_codons(self, rate):
         for i in range(0, self.length):
@@ -31,3 +36,4 @@ class Transcript:
 #            self.rates[0] = n
 #            self.weights = self.weights.random_codons()
 #        return self.weights
+
